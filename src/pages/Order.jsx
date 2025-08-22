@@ -207,7 +207,7 @@ const Order = () => {
           <option value="">Select Customer</option>
           {customers.map((c) => (
             <option key={c._id} value={c._id}>
-              {c.name}
+              {c._id} - {c.name}
             </option>
           ))}
         </select>

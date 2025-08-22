@@ -31,7 +31,9 @@ const Header = () => {
             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
               <span className="text-blue-600 font-bold text-lg">S</span>
             </div>
-            <span className="text-white text-xl font-bold">SalesApp-Ravindu Eshan's</span>
+            <span className="text-white text-xl font-bold">
+              SalesApp-Ravindu Eshan's
+            </span>
           </Link>
 
           {/* Navigation Links */}
@@ -75,6 +77,16 @@ const Header = () => {
               }`}
             >
               Orders
+            </Link>
+            <Link
+              to="/orders"
+              className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                isActive("/dashboard")
+                  ? "bg-white text-blue-600 shadow-md"
+                  : "text-white hover:bg-white/20 hover:text-white"
+              }`}
+            >
+              Dashboard
             </Link>
           </nav>
 

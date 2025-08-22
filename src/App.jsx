@@ -10,6 +10,7 @@ import Customer from './pages/Customer'
 import Order from './pages/Order'
 import Header from './components/Header'
 import Footer from './components/Footer'
+import DashboardStats from './pages/DashboardStats'
 function App() {
 
  const PrivateRoute = ({ children }) => {
@@ -43,6 +44,7 @@ function App() {
           />
           <Route path="/customers" element={<PrivateRoute><Customer /></PrivateRoute>} />
           <Route path="/orders" element={<PrivateRoute><Order /></PrivateRoute>} />
+          <Route path="/dashboard" element={<PrivateRoute><DashboardStats /></PrivateRoute>} />
         </Routes>
 
         <Footer/>

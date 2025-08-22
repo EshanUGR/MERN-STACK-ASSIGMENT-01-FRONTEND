@@ -91,14 +91,18 @@ const Order = () => {
   const finalAmount =
     totalValue - (totalValue * (formData.discountPercent || 0)) / 100;
 
+  const resetForm = () =>
+    setFormData({ _id: "", customer: "", items: [], discountPercent: 0 });
+
   const createOrder = async () => {
     if (!formData._id || !formData.customer || formData.items.length === 0) {
       return toast.error("Order ID, customer, and items are required.");
     }
 
-    const itemsPayload = formData.items
-      .filter((i) => i._id)
-      .map((i) => ({ itemId: i._id, quantity: i.quantity || 1 }));
+    const itemsPayload = formData.items.map((i) => ({
+      itemId: i._id,
+      quantity: i.quantity || 1,
+    }));
 
     try {
       await axios.post(
@@ -112,7 +116,7 @@ const Order = () => {
         { withCredentials: true }
       );
       toast.success("Order created successfully!");
-      setFormData({ _id: "", customer: "", items: [], discountPercent: 0 });
+      resetForm();
       fetchOrders();
     } catch (err) {
       toast.error(err?.response?.data?.message || "Failed to create order.");
@@ -126,8 +130,10 @@ const Order = () => {
       customer: order.customer?._id || "",
       items:
         order.items?.map((i) => ({
-          ...i,
-          _id: i.itemId?._id || i._id,
+          _id: i.itemId || i._id,
+          name: i.name,
+          price: i.price,
+          quantity: i.quantity,
         })) || [],
       discountPercent: order.discountPercent || 0,
     });
@@ -136,9 +142,11 @@ const Order = () => {
   const updateOrder = async () => {
     if (!editingId) return;
 
-    const itemsPayload = formData.items
-      .filter((i) => i._id)
-      .map((i) => ({ itemId: i._id, quantity: i.quantity || 1 }));
+    const itemsPayload = formData.items.map((i) => ({
+      itemId: i._id,
+      quantity: i.quantity || 1,
+      price: i.price || 0,
+    }));
 
     try {
       await axios.put(
@@ -152,7 +160,7 @@ const Order = () => {
       );
       toast.success("Order updated successfully!");
       setEditingId(null);
-      setFormData({ _id: "", customer: "", items: [], discountPercent: 0 });
+      resetForm();
       fetchOrders();
     } catch (err) {
       toast.error(err?.response?.data?.message || "Failed to update order.");
@@ -173,13 +181,14 @@ const Order = () => {
   };
 
   return (
-    <div className="max-w-6xl p-6 mx-auto mt-10 bg-white rounded-lg shadow-lg">
+    <div className="max-w-7xl p-6 mx-auto mt-10 bg-white rounded-lg shadow-lg">
       <ToastContainer />
-      <h2 className="text-2xl font-bold mb-4">
+      <h2 className="text-2xl font-bold mb-6">
         {editingId ? "✏️ Edit Order" : "➕ Add Order"}
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      {/* Order Form */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         <input
           type="text"
           name="_id"
@@ -212,6 +221,7 @@ const Order = () => {
         />
       </div>
 
+      {/* Items Section */}
       <div className="mb-4">
         <h3 className="text-lg font-semibold mb-2">Items</h3>
         {formData.items.map((item, idx) => (
@@ -224,7 +234,7 @@ const Order = () => {
               <option value="">Select Item</option>
               {itemsList.map((i) => (
                 <option key={i._id} value={i._id}>
-                  {i.name}
+                  {i.name} - Rs.{i.price}
                 </option>
               ))}
             </select>
@@ -235,7 +245,9 @@ const Order = () => {
               className="p-2 border rounded"
               min={1}
             />
-            <span className="p-2">{item.price || 0}</span>
+            <span className="p-2 font-semibold">
+              Rs.{(item.price || 0) * (item.quantity || 0)}
+            </span>
             <button
               onClick={() => removeItemRow(idx)}
               className="px-2 py-1 bg-red-600 text-white rounded"
@@ -252,11 +264,13 @@ const Order = () => {
         </button>
       </div>
 
-      <div className="mb-4">
-        <p>Total: {totalValue.toFixed(2)}</p>
-        <p>Final Amount: {finalAmount.toFixed(2)}</p>
+      {/* Totals */}
+      <div className="mb-6 text-right font-semibold">
+        <p>Total: Rs.{totalValue.toFixed(2)}</p>
+        <p>Final Amount: Rs.{finalAmount.toFixed(2)}</p>
       </div>
 
+      {/* Submit Button */}
       <button
         onClick={editingId ? updateOrder : createOrder}
         className={`w-full py-2 mb-6 text-white rounded ${
@@ -268,7 +282,8 @@ const Order = () => {
         {editingId ? "Update Order" : "Create Order"}
       </button>
 
-      <h3 className="text-xl font-semibold mb-2">Orders List</h3>
+      {/* Orders Table */}
+      <h3 className="text-xl font-semibold mb-4">Orders List</h3>
       {orders.length > 0 ? (
         <div className="overflow-x-auto">
           <table className="w-full text-sm border border-gray-300 rounded">
@@ -293,23 +308,24 @@ const Order = () => {
                   <td className="px-4 py-2">
                     {o.items?.map((i, idx) => (
                       <div key={idx}>
-                        {i.itemName || "Unknown"} x {i.quantity}
+                        {i.name} x {i.quantity} = Rs.
+                        {i.total || i.price * i.quantity}
                       </div>
                     ))}
                   </td>
-                  <td className="px-4 py-2">{o.totalValue}</td>
-                  <td className="px-4 py-2">{o.discountPercent}</td>
-                  <td className="px-4 py-2">{o.finalAmount}</td>
-                  <td className="px-4 py-2 flex gap-2">
+                  <td className="px-4 py-2">Rs.{o.totalValue}</td>
+                  <td className="px-4 py-2">{o.discountPercent}%</td>
+                  <td className="px-4 py-2">Rs.{o.finalAmount}</td>
+                  <td className="px-4 py-2 space-x-2">
                     <button
                       onClick={() => editOrder(o)}
-                      className="px-2 py-1 text-white bg-yellow-600 rounded hover:bg-yellow-700"
+                      className="px-2 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => deleteOrder(o._id)}
-                      className="px-2 py-1 text-white bg-red-600 rounded hover:bg-red-700"
+                      className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700"
                     >
                       Delete
                     </button>

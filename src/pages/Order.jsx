@@ -294,6 +294,8 @@ const Order = () => {
                 <th className="px-4 py-2">Items</th>
                 <th className="px-4 py-2">Total</th>
                 <th className="px-4 py-2">Discount %</th>
+                <th className="px-4 py-2">Order Date</th>
+                <th className="px-4 py-2">Order Status</th>
                 <th className="px-4 py-2">Final Amount</th>
                 <th className="px-4 py-2">Actions</th>
               </tr>
@@ -308,21 +310,33 @@ const Order = () => {
                   <td className="px-4 py-2">
                     {o.items?.map((i, idx) => (
                       <div key={idx}>
-                        {i.name} x {i.quantity} = Rs.
+                        {i.name} (Unit Price Rs.{i.price} ) x {i.quantity} = Rs.
                         {i.total || i.price * i.quantity}
                       </div>
                     ))}
                   </td>
                   <td className="px-4 py-2">Rs.{o.totalValue}</td>
                   <td className="px-4 py-2">{o.discountPercent}%</td>
+                  <td className="px-4 py-2">
+                    
+                    
+                      {new Date(o.orderDate).toISOString().split("T")[0]}
+                   
+                  </td>
+                  <td className="px-4 py-2">
+                    
+                    
+                     {o.status}
+                   
+                  </td>
                   <td className="px-4 py-2">Rs.{o.finalAmount}</td>
                   <td className="px-4 py-2 space-x-2">
-                    <button
+                    {/* <button
                       onClick={() => editOrder(o)}
                       className="px-2 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700"
                     >
                       Edit
-                    </button>
+                    </button> */}
                     <button
                       onClick={() => deleteOrder(o._id)}
                       className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700"

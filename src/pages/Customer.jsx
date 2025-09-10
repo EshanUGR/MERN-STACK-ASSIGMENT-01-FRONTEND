@@ -4,6 +4,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const Customer = () => {
+  const token = localStorage.getItem("access_token"); 
   const [customers, setCustomers] = useState([]);
   const [formData, setFormData] = useState({
     _id: "",
@@ -44,16 +45,35 @@ const Customer = () => {
     }
 
     try {
-      await axios.post("http://localhost:7000/api/customers", formData, {
-        withCredentials: true,
-      });
+      await axios.post(
+        "http://localhost:7000/api/customers",
+        formData, // 2nd argument is the data
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // JWT token
+            "Content-Type": "application/json",
+          },
+          withCredentials: true, // if you need cookies
+        }
+      );
+
       toast.success("Customer created successfully!");
       setFormData({ _id: "", name: "", NIC: "", address: "", contactNo: "" });
       fetchCustomers();
-    } catch (err) {
-      toast.error(err?.response?.data?.message || "Failed to create customer.");
-    }
-  };
+    } 
+    catch (err) {
+  const data = err?.response?.data;
+  //  console.log("Axios error:", err);
+  //  console.log("Axios error response:", err.response.data.errorrs);
+
+  if (data?.errors) {
+    // Show each field error in a toast
+    Object.values(data.errors).forEach((msg) => toast.error(msg));
+  } else {
+    toast.error(data?.message || "Failed to create customer.");
+  }
+}
+  }
 
   // Set form for editing
   const editCustomer = (customer) => {

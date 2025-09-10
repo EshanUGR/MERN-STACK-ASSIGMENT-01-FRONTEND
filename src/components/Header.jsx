@@ -32,7 +32,7 @@ const Header = () => {
               <span className="text-blue-600 font-bold text-lg">S</span>
             </div>
             <span className="text-white text-xl font-bold">
-              SalesApp-Ravindu Eshan's
+              SalesApp-Akila Suppliers
             </span>
           </Link>
 
@@ -68,6 +68,16 @@ const Header = () => {
             >
               Items
             </Link>
+            {/* <Link
+              to="/invoice"
+              className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                isActive("/invoice")
+                  ? "bg-white text-blue-600 shadow-md"
+                  : "text-white hover:bg-white/20 hover:text-white"
+              }`}
+            >
+              Invoice Generate
+            </Link> */}
             <Link
               to="/orders"
               className={`px-4 py-2 rounded-lg transition-all duration-200 ${
@@ -78,8 +88,28 @@ const Header = () => {
             >
               Orders
             </Link>
+            {/* <Link
+              to="/quotation"
+              className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                isActive("/quotation")
+                  ? "bg-white text-blue-600 shadow-md"
+                  : "text-white hover:bg-white/20 hover:text-white"
+              }`}
+            >
+              Quotation
+            </Link> */}
             <Link
-              to="/orders"
+              to="/order-status"
+              className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                isActive("/order-status")
+                  ? "bg-white text-blue-600 shadow-md"
+                  : "text-white hover:bg-white/20 hover:text-white"
+              }`}
+            >
+              Order Purchase
+            </Link>
+            <Link
+              to="/dashboard"
               className={`px-4 py-2 rounded-lg transition-all duration-200 ${
                 isActive("/dashboard")
                   ? "bg-white text-blue-600 shadow-md"

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-
+import InvoicePage from "./InvoicePage";
+import QuotationPage from "./QuotationPage";
 const DashboardStats = () => {
   const [stats, setStats] = useState({
     totalOrders: 0,
@@ -45,7 +46,11 @@ const DashboardStats = () => {
           <p className="text-3xl">{stats.totalItems}</p>
         </div>
       </div>
+<InvoicePage/>
+
+<QuotationPage/>
     </div>
+
   );
 };
 

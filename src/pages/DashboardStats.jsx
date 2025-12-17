@@ -46,11 +46,10 @@ const DashboardStats = () => {
           <p className="text-3xl">{stats.totalItems}</p>
         </div>
       </div>
-<InvoicePage/>
 
-<QuotationPage/>
+      <QuotationPage />
+      <InvoicePage />
     </div>
-
   );
 };
 

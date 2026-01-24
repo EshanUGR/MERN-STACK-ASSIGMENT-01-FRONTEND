@@ -118,6 +118,17 @@ const Header = () => {
             >
               Dashboard
             </Link>
+
+            <Link
+              to="/campaign"
+              className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                isActive("/campaign")
+                  ? "bg-white text-blue-600 shadow-md"
+                  : "text-white hover:bg-white/20"
+              }`}
+            >
+              Campaigns
+            </Link>
           </nav>
 
           {/* Auth Buttons */}

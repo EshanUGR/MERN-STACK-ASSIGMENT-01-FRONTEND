@@ -4,8 +4,9 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const Customer = () => {
-  const token = localStorage.getItem("access_token"); 
+  const token = localStorage.getItem("access_token");
   const [customers, setCustomers] = useState([]);
+  const [isFormOpen, setIsFormOpen] = useState(false); // Controls form visibility
   const [formData, setFormData] = useState({
     _id: "",
     name: "",
@@ -19,11 +20,10 @@ const Customer = () => {
     fetchCustomers();
   }, []);
 
-  // Fetch customers
   const fetchCustomers = async () => {
     try {
       const res = await axios.get("http://localhost:7000/api/customers", {
-        withCredentials: true, // ✅ include cookie automatically
+        withCredentials: true,
       });
       setCustomers(res.data);
     } catch {
@@ -31,195 +31,183 @@ const Customer = () => {
     }
   };
 
-  // Input change handler
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  // Create new customer
-  const createCustomer = async () => {
+  const resetForm = () => {
+    setFormData({ _id: "", name: "", NIC: "", address: "", contactNo: "" });
+    setEditingId(null);
+    setIsFormOpen(false);
+  };
+
+  // Create or Update handler
+  const handleSubmit = async () => {
     const { _id, name, NIC, address, contactNo } = formData;
     if (!_id || !name || !NIC || !address || !contactNo) {
-      return toast.error("All fields including ID are required.");
+      return toast.error("All fields are required.");
     }
 
     try {
-      await axios.post(
-        "http://localhost:7000/api/customers",
-        formData, // 2nd argument is the data
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // JWT token
-            "Content-Type": "application/json",
-          },
-          withCredentials: true, // if you need cookies
-        }
-      );
-
-      toast.success("Customer created successfully!");
-      setFormData({ _id: "", name: "", NIC: "", address: "", contactNo: "" });
-      fetchCustomers();
-    } 
-    catch (err) {
-  const data = err?.response?.data;
-  //  console.log("Axios error:", err);
-  //  console.log("Axios error response:", err.response.data.errorrs);
-
-  if (data?.errors) {
-    // Show each field error in a toast
-    Object.values(data.errors).forEach((msg) => toast.error(msg));
-  } else {
-    toast.error(data?.message || "Failed to create customer.");
-  }
-}
-  }
-
-  // Set form for editing
-  const editCustomer = (customer) => {
-    setEditingId(customer._id);
-    setFormData({
-      _id: customer._id,
-      name: customer.name,
-      NIC: customer.NIC,
-      address: customer.address,
-      contactNo: customer.contactNo,
-    });
-  };
-
-  // Update customer
-  const updateCustomer = async () => {
-    if (!editingId) return;
-    try {
-      await axios.put(
-        `http://localhost:7000/api/customers/${editingId}`,
-        formData,
-        { withCredentials: true }
-      );
-      toast.success("Customer updated successfully!");
-      setEditingId(null);
-      setFormData({ _id: "", name: "", NIC: "", address: "", contactNo: "" });
+      if (editingId) {
+        // Update Logic
+        await axios.put(
+          `http://localhost:7000/api/customers/${editingId}`,
+          formData,
+          { withCredentials: true }
+        );
+        toast.success("Customer updated!");
+      } else {
+        // Create Logic
+        await axios.post("http://localhost:7000/api/customers", formData, {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+        });
+        toast.success("Customer created!");
+      }
+      resetForm();
       fetchCustomers();
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Failed to update customer.");
+      toast.error(err?.response?.data?.message || "Operation failed.");
     }
   };
 
-  // Delete customer
-  const deleteCustomer = async (id) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this customer?"
-    );
-    if (!confirmed) return;
+  const editCustomer = (customer) => {
+    setEditingId(customer._id);
+    setFormData({ ...customer });
+    setIsFormOpen(true); // Show form when editing
+  };
 
+  const deleteCustomer = async (id) => {
+    if (!window.confirm("Are you sure?")) return;
     try {
       await axios.delete(`http://localhost:7000/api/customers/${id}`, {
         withCredentials: true,
       });
-      toast.success("Customer deleted successfully!");
+      toast.success("Deleted successfully!");
       fetchCustomers();
     } catch {
-      toast.error("Failed to delete customer.");
+      toast.error("Delete failed.");
     }
   };
 
   return (
-    <div className="max-w-3xl p-5 mx-auto mt-10 border rounded-lg shadow-lg">
+    <div className="max-w-4xl p-5 mx-auto mt-10 border rounded-lg shadow-lg bg-white">
       <ToastContainer />
 
-      <h2 className="mb-4 text-xl font-bold">
-        {editingId ? "✏️ Edit Customer" : "➕ Add Customer"}
-      </h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-800">
+          👥 Customer Management
+        </h2>
+        {!isFormOpen && (
+          <button
+            onClick={() => setIsFormOpen(true)}
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          >
+            + Add New Customer
+          </button>
+        )}
+      </div>
 
-      {/* ID input */}
-      <input
-        type="text"
-        name="_id"
-        placeholder="Customer ID"
-        value={formData._id}
-        onChange={handleInputChange}
-        className="w-full p-2 mb-2 border rounded"
-        disabled={editingId} // prevent changing ID while editing
-      />
+      {/* CONDITIONAL FORM VIEW: Only shows when adding or editing */}
+      {isFormOpen && (
+        <div className="mb-8 p-6 bg-gray-50 border-2 border-blue-100 rounded-xl">
+          <h3 className="text-lg font-semibold mb-4 text-blue-800">
+            {editingId
+              ? "✏️ Edit Full Details"
+              : "➕ Enter New Customer Details"}
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input
+              type="text"
+              name="_id"
+              placeholder="Customer ID"
+              value={formData._id}
+              onChange={handleInputChange}
+              className="p-2 border rounded"
+              disabled={editingId}
+            />
+            <input
+              type="text"
+              name="name"
+              placeholder="Full Name"
+              value={formData.name}
+              onChange={handleInputChange}
+              className="p-2 border rounded"
+            />
+            <input
+              type="text"
+              name="NIC"
+              placeholder="NIC Number"
+              value={formData.NIC}
+              onChange={handleInputChange}
+              className="p-2 border rounded"
+            />
+            <input
+              type="text"
+              name="contactNo"
+              placeholder="Contact No"
+              value={formData.contactNo}
+              onChange={handleInputChange}
+              className="p-2 border rounded"
+            />
+            <input
+              type="text"
+              name="address"
+              placeholder="Address"
+              value={formData.address}
+              onChange={handleInputChange}
+              className="p-2 border rounded md:col-span-2"
+            />
+          </div>
+          <div className="flex gap-2 mt-4">
+            <button
+              onClick={handleSubmit}
+              className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-bold"
+            >
+              {editingId ? "Save Changes" : "Save Customer"}
+            </button>
+            <button
+              onClick={resetForm}
+              className="px-6 bg-gray-400 text-white py-2 rounded hover:bg-gray-500"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
-      <input
-        type="text"
-        name="name"
-        placeholder="Name"
-        value={formData.name}
-        onChange={handleInputChange}
-        className="w-full p-2 mb-2 border rounded"
-      />
-      <input
-        type="text"
-        name="NIC"
-        placeholder="NIC"
-        value={formData.NIC}
-        onChange={handleInputChange}
-        className="w-full p-2 mb-2 border rounded"
-      />
-      <input
-        type="text"
-        name="address"
-        placeholder="Address"
-        value={formData.address}
-        onChange={handleInputChange}
-        className="w-full p-2 mb-2 border rounded"
-      />
-      <input
-        type="text"
-        name="contactNo"
-        placeholder="Contact No"
-        value={formData.contactNo}
-        onChange={handleInputChange}
-        className="w-full p-2 mb-2 border rounded"
-      />
-
-      <button
-        onClick={editingId ? updateCustomer : createCustomer}
-        className={`w-full py-2 mb-4 text-white ${
-          editingId
-            ? "bg-yellow-600 hover:bg-yellow-700"
-            : "bg-blue-600 hover:bg-blue-700"
-        } rounded`}
-      >
-        {editingId ? "Update Customer" : "Add Customer"}
-      </button>
-
-      <h3 className="mb-3 text-lg font-semibold">👥 Customers List</h3>
+      {/* SUMMARY TABLE VIEW */}
+      <h3 className="mb-3 text-lg font-semibold">Customers List</h3>
       {customers.length > 0 ? (
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left border border-gray-300 rounded-lg">
             <thead className="text-white bg-gray-700">
               <tr>
-              
-                <th className="px-4 py-2">ID</th>
-                <th className="px-4 py-2">Name</th>
-                <th className="px-4 py-2">NIC</th>
-                <th className="px-4 py-2">Address</th>
-                <th className="px-4 py-2">Contact No</th>
-                <th className="px-4 py-2">Actions</th>
+                <th className="px-4 py-3">ID</th>
+                <th className="px-4 py-3">Name</th>
+                <th className="px-4 py-3 text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {customers.map((cust, index) => (
-                <tr key={cust._id} className="odd:bg-gray-100 even:bg-white">
-                 
-                  <td className="px-4 py-2">{cust._id}</td>
-                  <td className="px-4 py-2">{cust.name}</td>
-                  <td className="px-4 py-2">{cust.NIC}</td>
-                  <td className="px-4 py-2">{cust.address}</td>
-                  <td className="px-4 py-2">{cust.contactNo}</td>
-                  <td className="px-4 py-2 flex gap-2">
+              {customers.map((cust) => (
+                <tr
+                  key={cust._id}
+                  className="border-b hover:bg-gray-50 transition-colors"
+                >
+                  <td className="px-4 py-3 font-medium">{cust._id}</td>
+                  <td className="px-4 py-3">{cust.name}</td>
+                  <td className="px-4 py-3 flex justify-center gap-2">
                     <button
                       onClick={() => editCustomer(cust)}
-                      className="px-2 py-1 text-white bg-yellow-600 rounded hover:bg-yellow-700"
+                      className="px-3 py-1 text-sm text-white bg-yellow-600 rounded hover:bg-yellow-700"
                     >
-                      Edit
+                      View & Edit
                     </button>
                     <button
                       onClick={() => deleteCustomer(cust._id)}
-                      className="px-2 py-1 text-white bg-red-600 rounded hover:bg-red-700"
+                      className="px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700"
                     >
                       Delete
                     </button>
@@ -230,7 +218,7 @@ const Customer = () => {
           </table>
         </div>
       ) : (
-        <p>No customers found.</p>
+        <p className="text-gray-500 italic">No customers found.</p>
       )}
     </div>
   );

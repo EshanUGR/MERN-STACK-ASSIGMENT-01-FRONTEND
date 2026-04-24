@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { login } from "../services/auth";
 
 const SignIn = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -21,20 +22,11 @@ const SignIn = () => {
 
     try {
       setLoading(true);
+      const data = await login(formData.email, formData.password);
 
-      const res = await fetch("http://localhost:7000/api/auth/signin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-        credentials: "include", // ✅ Important: allow cookies from server
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.message || "Sign in failed");
-
-      // Store user info (without token, token is in cookie)
-      localStorage.setItem("user", JSON.stringify(data.user));
+      if (data?.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
 
       toast.success("Signed in successfully!");
       navigate("/"); // redirect after login

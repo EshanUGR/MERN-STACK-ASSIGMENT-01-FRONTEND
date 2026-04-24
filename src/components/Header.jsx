@@ -5,6 +5,18 @@ const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const navItems = [
+    { to: "/", label: "Home" },
+    { to: "/customers", label: "Customers" },
+    { to: "/district-customers", label: "Lead Customers" },
+    { to: "/items", label: "Safety Items" },
+    { to: "/orders", label: "Orders" },
+    { to: "/order-status", label: "Purchases" },
+    { to: "/dashboard", label: "Insights" },
+    { to: "/campaign", label: "Campaigns" },
+  ];
 
   useEffect(() => {
     // Check if user is logged in (from localStorage or cookie)
@@ -16,127 +28,57 @@ const Header = () => {
 
   const isActive = (path) => location.pathname === path;
 
+  useEffect(() => {
+    // Close mobile menu after route changes.
+    setIsMenuOpen(false);
+  }, [location.pathname]);
+
   const handleSignOut = () => {
     localStorage.removeItem("user"); // Remove user
+    localStorage.removeItem("token");
     setUser(null);
     navigate("/sign-in"); // Redirect to login
   };
 
   return (
-    <header className="bg-gradient-to-r from-blue-600 to-purple-600 shadow-lg">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-              <span className="text-blue-600 font-bold text-lg">S</span>
+    <header className="sticky top-0 z-50 border-b border-cyan-100/20 bg-slate-950/95 backdrop-blur-xl shadow-[0_10px_35px_-18px_rgba(6,182,212,0.65)]">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-20 items-center justify-between">
+          <Link to="/" className="group flex items-center gap-3">
+            <div className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-emerald-400 text-slate-900 shadow-lg shadow-cyan-500/30">
+              <span className="text-lg font-black tracking-tight">A</span>
             </div>
-            <span className="text-white text-xl font-bold">
-              SalesApp-Akila Suppliers
-            </span>
+            <div>
+              <p className="text-white text-lg font-extrabold leading-5 tracking-wide">
+                Akila Suppliers
+              </p>
+              <p className="text-cyan-200/90 text-xs font-semibold uppercase tracking-[0.18em]">
+                Safety Item Supplier
+              </p>
+            </div>
           </Link>
 
-          {/* Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-1">
-            <Link
-              to="/"
-              className={`px-4 py-2 rounded-lg transition-all duration-200 ${
-                isActive("/")
-                  ? "bg-white text-blue-600 shadow-md"
-                  : "text-white hover:bg-white/20 hover:text-white"
-              }`}
-            >
-              Dashboard
-            </Link>
-            <Link
-              to="/customers"
-              className={`px-4 py-2 rounded-lg transition-all duration-200 ${
-                isActive("/customers")
-                  ? "bg-white text-blue-600 shadow-md"
-                  : "text-white hover:bg-white/20 hover:text-white"
-              }`}
-            >
-              Customers
-            </Link>
-            <Link
-              to="/items"
-              className={`px-4 py-2 rounded-lg transition-all duration-200 ${
-                isActive("/items")
-                  ? "bg-white text-blue-600 shadow-md"
-                  : "text-white hover:bg-white/20 hover:text-white"
-              }`}
-            >
-              Items
-            </Link>
-            {/* <Link
-              to="/invoice"
-              className={`px-4 py-2 rounded-lg transition-all duration-200 ${
-                isActive("/invoice")
-                  ? "bg-white text-blue-600 shadow-md"
-                  : "text-white hover:bg-white/20 hover:text-white"
-              }`}
-            >
-              Invoice Generate
-            </Link> */}
-            <Link
-              to="/orders"
-              className={`px-4 py-2 rounded-lg transition-all duration-200 ${
-                isActive("/orders")
-                  ? "bg-white text-blue-600 shadow-md"
-                  : "text-white hover:bg-white/20 hover:text-white"
-              }`}
-            >
-              Orders
-            </Link>
-            {/* <Link
-              to="/quotation"
-              className={`px-4 py-2 rounded-lg transition-all duration-200 ${
-                isActive("/quotation")
-                  ? "bg-white text-blue-600 shadow-md"
-                  : "text-white hover:bg-white/20 hover:text-white"
-              }`}
-            >
-              Quotation
-            </Link> */}
-            <Link
-              to="/order-status"
-              className={`px-4 py-2 rounded-lg transition-all duration-200 ${
-                isActive("/order-status")
-                  ? "bg-white text-blue-600 shadow-md"
-                  : "text-white hover:bg-white/20 hover:text-white"
-              }`}
-            >
-              Order Purchase
-            </Link>
-            <Link
-              to="/dashboard"
-              className={`px-4 py-2 rounded-lg transition-all duration-200 ${
-                isActive("/dashboard")
-                  ? "bg-white text-blue-600 shadow-md"
-                  : "text-white hover:bg-white/20 hover:text-white"
-              }`}
-            >
-              Dashboard
-            </Link>
-
-            <Link
-              to="/campaign"
-              className={`px-4 py-2 rounded-lg transition-all duration-200 ${
-                isActive("/campaign")
-                  ? "bg-white text-blue-600 shadow-md"
-                  : "text-white hover:bg-white/20"
-              }`}
-            >
-              Campaigns
-            </Link>
+          <nav className="hidden lg:flex items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1">
+            {navItems.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
+                  isActive(item.to)
+                    ? "bg-cyan-400 text-slate-900 shadow"
+                    : "text-slate-100 hover:bg-white/10"
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
           </nav>
 
-          {/* Auth Buttons */}
-          <div className="flex items-center space-x-3">
+          <div className="hidden md:flex items-center space-x-3">
             {user ? (
               <button
                 onClick={handleSignOut}
-                className="px-4 py-2 text-white border border-white/30 rounded-lg hover:bg-white/10 transition-all duration-200"
+                className="px-4 py-2 text-white border border-cyan-300/40 rounded-xl hover:bg-cyan-400/10 transition-all duration-200"
               >
                 Sign Out
               </button>
@@ -144,14 +86,14 @@ const Header = () => {
               <>
                 <Link
                   to="/sign-in"
-                  className="px-4 py-2 text-white border border-white/30 rounded-lg hover:bg-white/10 transition-all duration-200"
+                  className="px-4 py-2 text-white border border-cyan-300/40 rounded-xl hover:bg-cyan-400/10 transition-all duration-200"
                 >
                   Sign In
                 </Link>
 
                 <Link
                   to="/sign-up"
-                  className="px-4 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-gray-100 transition-all duration-200 shadow-sm hover:shadow-md"
+                  className="px-4 py-2 bg-cyan-400 text-slate-900 rounded-xl font-semibold hover:bg-cyan-300 transition-all duration-200 shadow-sm hover:shadow-md"
                 >
                   Sign Up
                 </Link>
@@ -159,8 +101,11 @@ const Header = () => {
             )}
           </div>
 
-          {/* Mobile menu button (optional) */}
-          <button className="md:hidden text-white p-2">
+          <button
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+            className="lg:hidden text-white p-2 rounded-lg hover:bg-white/10 transition"
+            aria-label="Toggle navigation"
+          >
             <svg
               className="w-6 h-6"
               fill="none"
@@ -176,6 +121,52 @@ const Header = () => {
             </svg>
           </button>
         </div>
+
+        {isMenuOpen && (
+          <div className="lg:hidden pb-4">
+            <nav className="grid gap-2 rounded-2xl border border-white/10 bg-slate-900/90 p-3">
+              {navItems.map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={`rounded-lg px-3 py-2 text-sm font-medium transition-all ${
+                    isActive(item.to)
+                      ? "bg-cyan-400 text-slate-900"
+                      : "text-slate-100 hover:bg-white/10"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+
+              <div className="mt-2 grid gap-2 border-t border-white/10 pt-3 md:hidden">
+                {user ? (
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full rounded-lg border border-cyan-300/40 px-3 py-2 text-left text-white hover:bg-cyan-400/10"
+                  >
+                    Sign Out
+                  </button>
+                ) : (
+                  <>
+                    <Link
+                      to="/sign-in"
+                      className="rounded-lg border border-cyan-300/40 px-3 py-2 text-white hover:bg-cyan-400/10"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      to="/sign-up"
+                      className="rounded-lg bg-cyan-400 px-3 py-2 text-slate-900 font-semibold hover:bg-cyan-300"
+                    >
+                      Sign Up
+                    </Link>
+                  </>
+                )}
+              </div>
+            </nav>
+          </div>
+        )}
       </div>
     </header>
   );

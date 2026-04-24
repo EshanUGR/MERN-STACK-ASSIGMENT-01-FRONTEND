@@ -12,6 +12,7 @@ import DashboardStats from "./pages/DashboardStats";
 import InvoicePage from "./pages/InvoicePage";
 import QuotationPage from "./pages/QuotationPage";
 import OrderList from "./pages/OrderList";
+import DistrictCustomers from "./pages/DistrictCustomers";
 
 function App() {
   const location = useLocation();
@@ -22,7 +23,8 @@ function App() {
   // Private Route Wrapper
   const PrivateRoute = ({ children }) => {
     const user = JSON.parse(localStorage.getItem("user"));
-    if (!user) {
+    const token = localStorage.getItem("token");
+    if (!user && !token) {
       return <Navigate to="/sign-in" replace />;
     }
     return children;
@@ -103,6 +105,14 @@ function App() {
             element={
               <PrivateRoute>
                 <OrderList />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/district-customers"
+            element={
+              <PrivateRoute>
+                <DistrictCustomers />
               </PrivateRoute>
             }
           />
